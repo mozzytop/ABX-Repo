@@ -864,7 +864,7 @@ def main():
 
         # ── DETAIL EXPANDER ───────────────────────────────────────────────
         st.divider()
-        with st.expander("🔎 Full Detail View (click to expand)", expanded=False):
+        with st.expander("Full Detail View (click to expand)", expanded=False):
             org_names = df["Organism"].tolist()
             selected_org = st.selectbox("Select Organism for Full Detail", org_names)
             if selected_org:
