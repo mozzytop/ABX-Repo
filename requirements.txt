@@ -1,0 +1,17 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Requirements — Dynamic Antibiogram & Antimicrobial Stewardship Tool
+# ─────────────────────────────────────────────────────────────────────────────
+# Install with:  pip install -r requirements.txt
+# Run app with:  streamlit run app.py
+# ─────────────────────────────────────────────────────────────────────────────
+
+streamlit>=1.35.0          # Core web framework
+pandas>=2.0.0              # Data manipulation & Styler
+fpdf2>=2.7.9               # Pure-Python PDF generation (landscape, multi-cell, colors)
+
+# ── Optional / for future data integration ───────────────────────────────────
+# sqlalchemy>=2.0.0        # DB connectivity (PostgreSQL, MySQL, SQLite)
+# psycopg2-binary>=2.9     # PostgreSQL adapter
+# requests>=2.31.0         # REST API calls (EUCAST, NCBI, CARD)
+# openpyxl>=3.1.0          # Excel import/export (if using xlsx antibiogram source)
+# python-dotenv>=1.0.0     # Environment variable management for DB secrets
