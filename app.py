@@ -767,7 +767,7 @@ def main():
     st.markdown("""
     <div style="background: linear-gradient(135deg,#1a3a5c,#0d6efd);
                 padding:18px 24px; border-radius:8px; margin-bottom:16px;">
-        <h2 style="color:white;margin:0;">🧫 Dynamic Antibiogram & Antimicrobial Stewardship Tool</h2>
+        <h2 style="color:white;margin:0;">Infectious Disease + Antimicrobial Stewardship</h2>
         <p style="color:#cce5ff;margin:4px 0 0 0;font-size:13px;">
             US Clinical Practice Reference · Bacteria · Fungi · Viruses · MDR Organisms
         </p>
@@ -788,7 +788,7 @@ def main():
             help="Highlights salvage therapies and high-exposure dosing for resistant organisms",
         )
         if mdr_focus:
-            st.warning("MDR Focus: showing salvage/high-dose regimens")
+            st.warning("MDR Therapies: showing salvage/high-dose regimens")
         st.divider()
 
         # Category filter
@@ -806,7 +806,7 @@ def main():
 
         # Search bar
         search_term = st.text_input(
-            "🔍 Search Organism",
+            "Search Organism",
             placeholder="e.g. Pseudomonas, Candida, Influenza",
         )
 
@@ -847,19 +847,6 @@ def main():
     if search_term.strip():
         mask = df["Organism"].str.contains(search_term.strip(), case=False, na=False)
         df = df[mask]
-
-    # ── METRICS ROW ───────────────────────────────────────────────────────
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Organisms Found", len(df))
-    col2.metric(
-        "Bacteria",
-        len(df[df["Category"] == "Bacteria"]),
-        delta=None,
-    )
-    col3.metric("Fungi", len(df[df["Category"] == "Fungi"]))
-    col4.metric("Viruses", len(df[df["Category"] == "Viruses"]))
-
-    st.divider()
 
     # ── MAIN TABLE ────────────────────────────────────────────────────────
     if df.empty:
