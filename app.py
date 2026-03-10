@@ -903,7 +903,7 @@ def main():
 
         export_col1, export_col2 = st.columns([2, 5])
         with export_col1:
-            if st.button("📄 Generate PDF", use_container_width=True, type="primary"):
+            if st.button("Generate PDF", use_container_width=True, type="primary"):
                 with st.spinner("Building PDF..."):
                     pdf_bytes = generate_pdf(df, mdr_focus)
                 filename = f"antibiogram_{'MDR' if mdr_focus else 'standard'}_{cat_sel.replace(' ', '_')}.pdf"
