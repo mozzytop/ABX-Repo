@@ -573,7 +573,7 @@ def style_row(row: pd.Series) -> list:
     return styles
 
 
-def build_styled_df(df: pd.DataFrame, mdr_focus: bool) -> pd.io.formats.style.Styler:
+def build_styled_df(df: pd.DataFrame, mdr_focus: bool):
     """Build and return a Pandas Styler object for the main table."""
     display_cols = MDR_COLS if mdr_focus else STANDARD_COLS
 
@@ -584,7 +584,7 @@ def build_styled_df(df: pd.DataFrame, mdr_focus: bool) -> pd.io.formats.style.St
 
     styler = (
         working.style
-        .apply(style_row, axis=1, subset=available)
+        .apply(style_row, axis=1)
         .set_properties(**{"font-size": "12px", "text-align": "left"})
         .set_table_styles([
             {"selector": "th", "props": [
