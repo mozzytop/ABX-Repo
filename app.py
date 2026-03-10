@@ -778,7 +778,7 @@ def main():
 
     # ── SIDEBAR ───────────────────────────────────────────────────────────
     with st.sidebar:
-        st.markdown("## Filters & Settings")
+        st.markdown("## Filters + Settings")
         st.divider()
 
         # MDR Focus toggle
