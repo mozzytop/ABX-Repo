@@ -622,13 +622,13 @@ def generate_pdf(filtered_df: pd.DataFrame, mdr_focus: bool) -> bytes:
     pdf.add_page()
 
     # ── Header ────────────────────────────────────────────────────────────
-    pdf.set_font("Helvetica", "B", 16)
+    pdf.set_font("Times", "B", 16)
     pdf.set_fill_color(26, 58, 92)
     pdf.set_text_color(255, 255, 255)
     pdf.cell(0, 10, "Dynamic Antibiogram & Antimicrobial Stewardship Tool", ln=True,
              align="C", fill=True)
 
-    pdf.set_font("Helvetica", "", 9)
+    pdf.set_font("Times", "", 9)
     pdf.set_text_color(100, 100, 100)
     mode_label = "MDR FOCUS MODE" if mdr_focus else "Standard Mode"
     pdf.cell(0, 6,
@@ -637,7 +637,7 @@ def generate_pdf(filtered_df: pd.DataFrame, mdr_focus: bool) -> bytes:
     pdf.ln(2)
 
     # ── Legend ────────────────────────────────────────────────────────────
-    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_font("Times", "B", 8)
     pdf.set_text_color(0, 0, 0)
     for label, (r, g, b) in [
         ("First-Line / Reliable", (212, 237, 218)),
@@ -671,7 +671,7 @@ def generate_pdf(filtered_df: pd.DataFrame, mdr_focus: bool) -> bytes:
     ROW_H = 6
 
     # ── Table header ──────────────────────────────────────────────────────
-    pdf.set_font("Helvetica", "B", 7)
+    pdf.set_font("Times", "B", 7)
     pdf.set_fill_color(26, 58, 92)
     pdf.set_text_color(255, 255, 255)
     for col, cw in zip(cols, col_widths):
@@ -682,7 +682,7 @@ def generate_pdf(filtered_df: pd.DataFrame, mdr_focus: bool) -> bytes:
     eff_map = filtered_df.set_index("Organism") if "Organism" in filtered_df.columns else None
 
     for _, row in df_print.iterrows():
-        pdf.set_font("Helvetica", "", 6.5)
+        pdf.set_font("Times", "", 6.5)
         pdf.set_text_color(0, 0, 0)
 
         # Determine row height from content
@@ -698,13 +698,13 @@ def generate_pdf(filtered_df: pd.DataFrame, mdr_focus: bool) -> bytes:
         if pdf.get_y() + row_h > pdf.h - pdf.b_margin:
             pdf.add_page()
             # Repeat header
-            pdf.set_font("Helvetica", "B", 7)
+            pdf.set_font("Times", "B", 7)
             pdf.set_fill_color(26, 58, 92)
             pdf.set_text_color(255, 255, 255)
             for col, cw in zip(cols, col_widths):
                 pdf.cell(cw, ROW_H, col, border=1, fill=True, align="C")
             pdf.ln()
-            pdf.set_font("Helvetica", "", 6.5)
+            pdf.set_font("Times", "", 6.5)
             pdf.set_text_color(0, 0, 0)
 
         x_start = pdf.get_x()
@@ -743,7 +743,7 @@ def generate_pdf(filtered_df: pd.DataFrame, mdr_focus: bool) -> bytes:
         pdf.set_xy(x_start, y_start + row_h)
 
     # ── Footer ────────────────────────────────────────────────────────────
-    pdf.set_font("Helvetica", "I", 7)
+    pdf.set_font("Times", "I", 7)
     pdf.set_text_color(120, 120, 120)
     pdf.cell(0, 5,
              "Data derived from Sanford Guide, IDSA Guidelines, CDC, and US clinical practice. "
