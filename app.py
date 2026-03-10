@@ -1,5 +1,5 @@
 """
-Dynamic Antibiogram & Antimicrobial Stewardship Tool
+Infectious Disease + Antimicrobial Tool
 =====================================================
 A Streamlit-based clinical reference tool for US clinical practice.
 Covers bacteria, fungi, and viruses with MDR organism focus.
@@ -771,7 +771,6 @@ def generate_pdf(filtered_df: pd.DataFrame, mdr_focus: bool) -> bytes:
 def main():
     st.set_page_config(
         page_title="Antimicrobial Stewardship Tool",
-        page_icon="🧫",
         layout="wide",
         initial_sidebar_state="expanded",
     )
@@ -780,7 +779,7 @@ def main():
     st.markdown("""
     <div style="background: linear-gradient(135deg,#1a3a5c,#0d6efd);
                 padding:18px 24px; border-radius:8px; margin-bottom:16px;">
-        <h2 style="color:white;margin:0;">🧫 Dynamic Antibiogram & Antimicrobial Stewardship Tool</h2>
+        <h2 style="color:white;margin:0;">Dynamic Antibiogram & Antimicrobial Stewardship Tool</h2>
         <p style="color:#cce5ff;margin:4px 0 0 0;font-size:13px;">
             US Clinical Practice Reference · Bacteria · Fungi · Viruses · MDR Organisms
         </p>
@@ -791,28 +790,27 @@ def main():
 
     # ── SIDEBAR ───────────────────────────────────────────────────────────
     with st.sidebar:
-        st.image("https://img.icons8.com/fluency/48/bacteria.png", width=48)
-        st.markdown("## 🔬 Filters & Settings")
+        st.markdown("## Filters + Settings")
         st.divider()
 
         # MDR Focus toggle
         mdr_focus = st.toggle(
-            "🚨 MDR Focus Mode",
+            "MDR Focus Mode",
             value=False,
             help="Highlights salvage therapies and high-exposure dosing for resistant organisms",
         )
         if mdr_focus:
-            st.warning("⚠️ MDR Focus: showing salvage/high-dose regimens")
+            st.warning("MDR Focus: showing salvage/high-dose regimens")
         st.divider()
 
         # Category filter
         categories = ["All"] + sorted(df_full["Category"].unique().tolist())
-        cat_sel = st.selectbox("📂 Pathogen Category", categories)
+        cat_sel = st.selectbox("Pathogen Category", categories)
 
         # Gram / Morphology filter (bacteria-centric)
         morph_options = sorted(df_full["Gram / Morphology"].unique().tolist())
         morph_sel = st.multiselect(
-            "🔬 Gram Stain / Morphology",
+            "Gram Stain / Morphology",
             morph_options,
             default=[],
             help="Leave blank to include all morphologies",
@@ -827,7 +825,7 @@ def main():
         st.divider()
 
         # Legend
-        st.markdown("### 🎨 Efficacy Legend")
+        st.markdown("### Efficacy Legend")
         st.markdown("""
         <div style="font-size:13px;line-height:1.9;">
           <span style="background:#d4edda;padding:2px 8px;border-radius:4px;">■</span>
@@ -844,7 +842,7 @@ def main():
         <div style="font-size:11px;color:#888;">
         Data sources: Sanford Guide 2024, IDSA Guidelines, CDC, 
         EUCAST/CLSI Breakpoints<br><br>
-        <b>⚠️ Clinical decision support only.</b><br>
+        <b>Clinical decision support only.</b><br>
         Always correlate with local antibiogram and patient factors.
         </div>
         """, unsafe_allow_html=True)
@@ -862,24 +860,11 @@ def main():
         mask = df["Organism"].str.contains(search_term.strip(), case=False, na=False)
         df = df[mask]
 
-    # ── METRICS ROW ───────────────────────────────────────────────────────
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Organisms Found", len(df))
-    col2.metric(
-        "Bacteria",
-        len(df[df["Category"] == "Bacteria"]),
-        delta=None,
-    )
-    col3.metric("Fungi", len(df[df["Category"] == "Fungi"]))
-    col4.metric("Viruses", len(df[df["Category"] == "Viruses"]))
-
-    st.divider()
-
     # ── MAIN TABLE ────────────────────────────────────────────────────────
     if df.empty:
         st.info("No organisms match your current filters. Try broadening your search.")
     else:
-        mode_label = "🚨 MDR Salvage Reference" if mdr_focus else "📋 Standard Antibiogram"
+        mode_label = "MDR Salvage Reference" if mdr_focus else "Standard Antibiogram"
         st.subheader(mode_label)
 
         styler = build_styled_df(df, mdr_focus)
@@ -891,7 +876,7 @@ def main():
 
         # ── DETAIL EXPANDER ───────────────────────────────────────────────
         st.divider()
-        with st.expander("🔎 Full Detail View (click to expand)", expanded=False):
+        with st.expander("Full Detail View (click to expand)", expanded=False):
             org_names = df["Organism"].tolist()
             selected_org = st.selectbox("Select Organism for Full Detail", org_names)
             if selected_org:
@@ -918,19 +903,19 @@ def main():
                         st.warning(f"**Agent:** {row['MDR Therapy']}")
                     st.markdown(f"**US Dosing:** `{row['MDR Dosing']}`")
                     st.markdown("---")
-                    st.markdown("#### 🧬 Resistance Mechanisms")
+                    st.markdown("#### Resistance Mechanisms")
                     st.markdown(f"_{row['Resistance Mechanisms']}_")
-                    st.markdown("#### 📝 Key Notes")
+                    st.markdown("#### Key Notes")
                     st.markdown(f"> {row['Key Notes']}")
 
         # ── PDF EXPORT ────────────────────────────────────────────────────
         st.divider()
-        st.subheader("📥 Export")
+        st.subheader("Export")
         st.markdown("Download the currently filtered table as a **landscape-format PDF** point-of-care reference sheet.")
 
         export_col1, export_col2 = st.columns([2, 5])
         with export_col1:
-            if st.button("📄 Generate PDF", use_container_width=True, type="primary"):
+            if st.button("Generate PDF", use_container_width=True, type="primary"):
                 with st.spinner("Building PDF..."):
                     pdf_bytes = generate_pdf(df, mdr_focus)
                 filename = f"antibiogram_{'MDR' if mdr_focus else 'standard'}_{cat_sel.replace(' ', '_')}.pdf"
@@ -941,7 +926,7 @@ def main():
         if "pdf_bytes" in st.session_state:
             with export_col1:
                 st.download_button(
-                    label="⬇️ Download PDF",
+                    label="Download PDF",
                     data=st.session_state["pdf_bytes"],
                     file_name=st.session_state.get("pdf_filename", "antibiogram.pdf"),
                     mime="application/pdf",
