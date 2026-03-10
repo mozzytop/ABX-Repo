@@ -608,6 +608,18 @@ def build_styled_df(df: pd.DataFrame, mdr_focus: bool):
 # ─────────────────────────────────────────────────────────────────────────────
 # 4. PDF EXPORT ENGINE
 # ─────────────────────────────────────────────────────────────────────────────
+_UNICODE_REPLACEMENTS = {
+    "\u2265": ">=",  "\u2264": "<=",  "\u2192": "->",  "\u2190": "<-",
+    "\u2013": "-",   "\u2014": "--",  "\u2018": "'",   "\u2019": "'",
+    "\u201c": '"',   "\u201d": '"',   "\u2022": "*",   "\u00b1": "+/-",
+    "\u00d7": "x",   "\u03b2": "beta", "\u03bc": "u",
+}
+
+def _pdf_safe(text: str) -> str:
+    """Replace Unicode characters unsupported by FPDF built-in Latin-1 fonts."""
+    for char, repl in _UNICODE_REPLACEMENTS.items():
+        text = text.replace(char, repl)
+    return text.encode("latin-1", errors="replace").decode("latin-1")
 def generate_pdf(filtered_df: pd.DataFrame, mdr_focus: bool) -> bytes:
     """
     Generate a landscape-oriented PDF from the currently filtered DataFrame.
@@ -622,13 +634,13 @@ def generate_pdf(filtered_df: pd.DataFrame, mdr_focus: bool) -> bytes:
     pdf.add_page()
 
     # ── Header ────────────────────────────────────────────────────────────
-    pdf.set_font("Times", "B", 16)
+    pdf.set_font("Helvetica", "B", 16)
     pdf.set_fill_color(26, 58, 92)
     pdf.set_text_color(255, 255, 255)
     pdf.cell(0, 10, "Dynamic Antibiogram & Antimicrobial Stewardship Tool", ln=True,
              align="C", fill=True)
 
-    pdf.set_font("Times", "", 9)
+    pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(100, 100, 100)
     mode_label = "MDR FOCUS MODE" if mdr_focus else "Standard Mode"
     pdf.cell(0, 6,
@@ -637,7 +649,7 @@ def generate_pdf(filtered_df: pd.DataFrame, mdr_focus: bool) -> bytes:
     pdf.ln(2)
 
     # ── Legend ────────────────────────────────────────────────────────────
-    pdf.set_font("Times", "B", 8)
+    pdf.set_font("Helvetica", "B", 8)
     pdf.set_text_color(0, 0, 0)
     for label, (r, g, b) in [
         ("First-Line / Reliable", (212, 237, 218)),
@@ -671,7 +683,7 @@ def generate_pdf(filtered_df: pd.DataFrame, mdr_focus: bool) -> bytes:
     ROW_H = 6
 
     # ── Table header ──────────────────────────────────────────────────────
-    pdf.set_font("Times", "B", 7)
+    pdf.set_font("Helvetica", "B", 7)
     pdf.set_fill_color(26, 58, 92)
     pdf.set_text_color(255, 255, 255)
     for col, cw in zip(cols, col_widths):
@@ -682,13 +694,13 @@ def generate_pdf(filtered_df: pd.DataFrame, mdr_focus: bool) -> bytes:
     eff_map = filtered_df.set_index("Organism") if "Organism" in filtered_df.columns else None
 
     for _, row in df_print.iterrows():
-        pdf.set_font("Times", "", 6.5)
+        pdf.set_font("Helvetica", "", 6.5)
         pdf.set_text_color(0, 0, 0)
 
         # Determine row height from content
         cell_heights = []
         for col, cw in zip(cols, col_widths):
-            txt = str(row[col]) if pd.notna(row[col]) else ""
+            txt = _pdf_safe(str(row[col])) if pd.notna(row[col]) else ""
             n_lines = max(1, len(pdf.multi_cell(cw, ROW_H - 1, txt,
                                                  split_only=True)))
             cell_heights.append(n_lines * (ROW_H - 1))
@@ -698,20 +710,20 @@ def generate_pdf(filtered_df: pd.DataFrame, mdr_focus: bool) -> bytes:
         if pdf.get_y() + row_h > pdf.h - pdf.b_margin:
             pdf.add_page()
             # Repeat header
-            pdf.set_font("Times", "B", 7)
+            pdf.set_font("Helvetica", "B", 7)
             pdf.set_fill_color(26, 58, 92)
             pdf.set_text_color(255, 255, 255)
             for col, cw in zip(cols, col_widths):
                 pdf.cell(cw, ROW_H, col, border=1, fill=True, align="C")
             pdf.ln()
-            pdf.set_font("Times", "", 6.5)
+            pdf.set_font("Helvetica", "", 6.5)
             pdf.set_text_color(0, 0, 0)
 
         x_start = pdf.get_x()
         y_start = pdf.get_y()
 
         for i, (col, cw) in enumerate(zip(cols, col_widths)):
-            txt = str(row[col]) if pd.notna(row[col]) else ""
+            txt = _pdf_safe(str(row[col])) if pd.notna(row[col]) else ""
             # Efficacy colouring
             fill = False
             if col in DISPLAY_TO_EFFICACY and eff_map is not None:
@@ -743,7 +755,7 @@ def generate_pdf(filtered_df: pd.DataFrame, mdr_focus: bool) -> bytes:
         pdf.set_xy(x_start, y_start + row_h)
 
     # ── Footer ────────────────────────────────────────────────────────────
-    pdf.set_font("Times", "I", 7)
+    pdf.set_font("Helvetica", "I", 7)
     pdf.set_text_color(120, 120, 120)
     pdf.cell(0, 5,
              "Data derived from Sanford Guide, IDSA Guidelines, CDC, and US clinical practice. "
@@ -759,6 +771,7 @@ def generate_pdf(filtered_df: pd.DataFrame, mdr_focus: bool) -> bytes:
 def main():
     st.set_page_config(
         page_title="Antimicrobial Stewardship Tool",
+        page_icon="🧫",
         layout="wide",
         initial_sidebar_state="expanded",
     )
@@ -767,7 +780,7 @@ def main():
     st.markdown("""
     <div style="background: linear-gradient(135deg,#1a3a5c,#0d6efd);
                 padding:18px 24px; border-radius:8px; margin-bottom:16px;">
-        <h2 style="color:white;margin:0;">Infectious Disease + Antimicrobial Stewardship</h2>
+        <h2 style="color:white;margin:0;">🧫 Dynamic Antibiogram & Antimicrobial Stewardship Tool</h2>
         <p style="color:#cce5ff;margin:4px 0 0 0;font-size:13px;">
             US Clinical Practice Reference · Bacteria · Fungi · Viruses · MDR Organisms
         </p>
@@ -778,27 +791,28 @@ def main():
 
     # ── SIDEBAR ───────────────────────────────────────────────────────────
     with st.sidebar:
-        st.markdown("## Filters + Settings")
+        st.image("https://img.icons8.com/fluency/48/bacteria.png", width=48)
+        st.markdown("## 🔬 Filters & Settings")
         st.divider()
 
         # MDR Focus toggle
         mdr_focus = st.toggle(
-            "MDR Focus Mode",
+            "🚨 MDR Focus Mode",
             value=False,
             help="Highlights salvage therapies and high-exposure dosing for resistant organisms",
         )
         if mdr_focus:
-            st.warning("MDR Therapies: showing salvage/high-dose regimens")
+            st.warning("⚠️ MDR Focus: showing salvage/high-dose regimens")
         st.divider()
 
         # Category filter
         categories = ["All"] + sorted(df_full["Category"].unique().tolist())
-        cat_sel = st.selectbox("Pathogen Category", categories)
+        cat_sel = st.selectbox("📂 Pathogen Category", categories)
 
         # Gram / Morphology filter (bacteria-centric)
         morph_options = sorted(df_full["Gram / Morphology"].unique().tolist())
         morph_sel = st.multiselect(
-            "Gram Stain / Morphology",
+            "🔬 Gram Stain / Morphology",
             morph_options,
             default=[],
             help="Leave blank to include all morphologies",
@@ -806,14 +820,14 @@ def main():
 
         # Search bar
         search_term = st.text_input(
-            "Search Organism",
+            "🔍 Search Organism",
             placeholder="e.g. Pseudomonas, Candida, Influenza",
         )
 
         st.divider()
 
         # Legend
-        st.markdown("### Efficacy Legend")
+        st.markdown("### 🎨 Efficacy Legend")
         st.markdown("""
         <div style="font-size:13px;line-height:1.9;">
           <span style="background:#d4edda;padding:2px 8px;border-radius:4px;">■</span>
@@ -830,7 +844,7 @@ def main():
         <div style="font-size:11px;color:#888;">
         Data sources: Sanford Guide 2024, IDSA Guidelines, CDC, 
         EUCAST/CLSI Breakpoints<br><br>
-        <b>Clinical decision support only.</b><br>
+        <b>⚠️ Clinical decision support only.</b><br>
         Always correlate with local antibiogram and patient factors.
         </div>
         """, unsafe_allow_html=True)
@@ -848,11 +862,24 @@ def main():
         mask = df["Organism"].str.contains(search_term.strip(), case=False, na=False)
         df = df[mask]
 
+    # ── METRICS ROW ───────────────────────────────────────────────────────
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Organisms Found", len(df))
+    col2.metric(
+        "Bacteria",
+        len(df[df["Category"] == "Bacteria"]),
+        delta=None,
+    )
+    col3.metric("Fungi", len(df[df["Category"] == "Fungi"]))
+    col4.metric("Viruses", len(df[df["Category"] == "Viruses"]))
+
+    st.divider()
+
     # ── MAIN TABLE ────────────────────────────────────────────────────────
     if df.empty:
         st.info("No organisms match your current filters. Try broadening your search.")
     else:
-        mode_label = "MDR Salvage Reference" if mdr_focus else "Standard Antibiogram"
+        mode_label = "🚨 MDR Salvage Reference" if mdr_focus else "📋 Standard Antibiogram"
         st.subheader(mode_label)
 
         styler = build_styled_df(df, mdr_focus)
@@ -864,7 +891,7 @@ def main():
 
         # ── DETAIL EXPANDER ───────────────────────────────────────────────
         st.divider()
-        with st.expander("Full Detail View (click to expand)", expanded=False):
+        with st.expander("🔎 Full Detail View (click to expand)", expanded=False):
             org_names = df["Organism"].tolist()
             selected_org = st.selectbox("Select Organism for Full Detail", org_names)
             if selected_org:
@@ -891,19 +918,19 @@ def main():
                         st.warning(f"**Agent:** {row['MDR Therapy']}")
                     st.markdown(f"**US Dosing:** `{row['MDR Dosing']}`")
                     st.markdown("---")
-                    st.markdown("#### Resistance Mechanisms")
+                    st.markdown("#### 🧬 Resistance Mechanisms")
                     st.markdown(f"_{row['Resistance Mechanisms']}_")
-                    st.markdown("#### Key Notes")
+                    st.markdown("#### 📝 Key Notes")
                     st.markdown(f"> {row['Key Notes']}")
 
         # ── PDF EXPORT ────────────────────────────────────────────────────
         st.divider()
-        st.subheader("Export")
+        st.subheader("📥 Export")
         st.markdown("Download the currently filtered table as a **landscape-format PDF** point-of-care reference sheet.")
 
         export_col1, export_col2 = st.columns([2, 5])
         with export_col1:
-            if st.button("Generate PDF", use_container_width=True, type="primary"):
+            if st.button("📄 Generate PDF", use_container_width=True, type="primary"):
                 with st.spinner("Building PDF..."):
                     pdf_bytes = generate_pdf(df, mdr_focus)
                 filename = f"antibiogram_{'MDR' if mdr_focus else 'standard'}_{cat_sel.replace(' ', '_')}.pdf"
